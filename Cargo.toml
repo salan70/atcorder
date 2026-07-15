@@ -1,0 +1,6 @@
+[workspace]
+resolver = "2"
+members = ["lib", "abc001_a", "abc001_b"]
+
+# 新しい問題ディレクトリを追加したらここに追記する
+# members = ["lib", "abc001", "abc002"]

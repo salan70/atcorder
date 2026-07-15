@@ -1,0 +1,8 @@
+/target
+*.swp
+*.swo
+*~
+.DS_Store
+*.bak
+input.txt
+output.txt
