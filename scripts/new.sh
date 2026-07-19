@@ -1,18 +1,19 @@
 #!/bin/bash
 set -e
 
-# Usage: ./scripts/new.sh abc001 a
-#   -> abc001_a を作成
+# Usage: ./scripts/new.sh abc a 001
+#   -> contests/abc/a/001/ を作成
 
-if [ $# -lt 2 ]; then
-    echo "Usage: $0 <contest> <problem>"
-    echo "Example: $0 abc001 a"
+if [ $# -lt 3 ]; then
+    echo "Usage: $0 <contest-type> <problem-letter> <contest-number>"
+    echo "Example: $0 abc a 001"
     exit 1
 fi
 
-CONTEST="$1"
-PROBLEM="$2"
-DIR="${CONTEST}_${PROBLEM}"
+CONTEST_TYPE="$1"
+PROBLEM_LETTER="$2"
+CONTEST_NUMBER="$3"
+DIR="contests/${CONTEST_TYPE}/${PROBLEM_LETTER}/${CONTEST_NUMBER}"
 
 if [ -d "$DIR" ]; then
     echo "Error: $DIR already exists"
@@ -26,16 +27,16 @@ mkdir -p "$DIR/tests"
 # Create Cargo.toml
 cat > "$DIR/Cargo.toml" << EOF
 [package]
-name = "$DIR"
+name = "${CONTEST_TYPE}${CONTEST_NUMBER}_${PROBLEM_LETTER}"
 version = "0.1.0"
 edition = "2021"
 
 [[bin]]
-name = "$PROBLEM"
+name = "$PROBLEM_LETTER"
 path = "src/main.rs"
 
 [dependencies]
-lib = { path = "../lib" }
+lib = { path = "../../../../lib" }
 EOF
 
 # Create main.rs from template
@@ -54,4 +55,4 @@ if ! grep -q "\"$DIR\"" "$ROOT_TOML"; then
 fi
 
 echo "Created $DIR/"
-echo "  cargo run -p $DIR"
+echo "  cargo run -p ${CONTEST_TYPE}${CONTEST_NUMBER}_${PROBLEM_LETTER}"

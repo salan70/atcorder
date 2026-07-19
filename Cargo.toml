@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["lib", "abc001_a", "abc001_b"]
+members = ["lib", "contests/abc/a/001", "contests/abc/b/001"]
 
 # 新しい問題ディレクトリを追加したらここに追記する
-# members = ["lib", "abc001", "abc002"]
+# members = ["lib", "contests/abc/a/001", "contests/abc/b/001", "contests/abc/c/001"]

@@ -1,11 +1,11 @@
 [package]
-name = "abc001_b"
+name = "abc001_a"
 version = "0.1.0"
 edition = "2021"
 
 [[bin]]
-name = "b"
+name = "a"
 path = "src/main.rs"
 
 [dependencies]
-lib = { path = "../lib" }
+lib = { path = "../../../../lib" }
