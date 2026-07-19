@@ -7,15 +7,19 @@ Rust で AtCoder に取り組むための Cargo workspace
 ```sh
 git clone <repo-url>
 cd atcorder
-cargo build
+nix develop
+just build
 ```
+
+Nix の開発シェルには Rust toolchain、`rust-analyzer`、`just` が含まれる。
+以降のコマンドは `nix develop` 内で実行する。
 
 ## 問題に取り組む流れ
 
 ### 1. 問題ディレクトリを生成
 
 ```sh
-./scripts/new.sh abc a 001
+just new abc a 001
 ```
 
 `contests/abc/a/001/` が作成される。Cargo.toml の workspace members にも自動追加される。
@@ -47,12 +51,29 @@ cargo build
 ### 4. 実行・テスト
 
 ```sh
-# 実行（サンプル入力をパイプで渡す）
-cat contests/abc/a/001/tests/input.txt | cargo run -p abc001_a
+# サンプル入力で実行
+just run abc a 001
 
 # 期待出力と比較
-cat contests/abc/a/001/tests/input.txt | cargo run -p abc001_a | diff - contests/abc/a/001/tests/output.txt
+just sample abc a 001
 ```
+
+## 開発コマンド
+
+利用可能なコマンドは `just` または `just --list` で確認できる。
+
+| コマンド | 説明 |
+|----------|------|
+| `just build` | workspace 全体をビルド |
+| `just check` | workspace 全体を型チェック |
+| `just test` | workspace 全体のテストを実行 |
+| `just fmt` | Rust コードを整形 |
+| `just fmt-check` | Rust コードが整形済みか確認 |
+| `just clippy` | Clippy で静的解析 |
+| `just verify` | format、check、Clippy、test を一括実行 |
+| `just new abc a 001` | 問題ディレクトリを生成 |
+| `just run abc a 001` | サンプル入力で解答を実行 |
+| `just sample abc a 001` | 実行結果を期待出力と比較 |
 
 ## ディレクトリ構成
 
@@ -61,6 +82,8 @@ cat contests/abc/a/001/tests/input.txt | cargo run -p abc001_a | diff - contests
 ├── lib/                  # 共通ユーティリティ
 ├── templates/            # 新規問題のテンプレート
 ├── scripts/              # 新規ディレクトリ生成スクリプト
+├── flake.nix             # Nix 開発環境
+├── justfile              # 開発コマンド
 ├── contests/
 │   └── abc/              # コンテスト種別 (abc, arc, agc...)
 │       ├── a/            # 問題番号
