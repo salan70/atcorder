@@ -1,0 +1,55 @@
+[package]
+name = "rust"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+lib = { path = "../lib" }
+
+[[bin]]
+name = "abc001_a"
+path = "src/abc001_a.rs"
+
+[[bin]]
+name = "abc001_b"
+path = "src/abc001_b.rs"
+
+[[bin]]
+name = "abc447_a"
+path = "src/abc447_a.rs"
+
+[[bin]]
+name = "abc448_a"
+path = "src/abc448_a.rs"
+
+[[bin]]
+name = "abc449_a"
+path = "src/abc449_a.rs"
+
+[[bin]]
+name = "abc450_a"
+path = "src/abc450_a.rs"
+
+[[bin]]
+name = "abc451_a"
+path = "src/abc451_a.rs"
+
+[[bin]]
+name = "abc452_a"
+path = "src/abc452_a.rs"
+
+[[bin]]
+name = "abc453_a"
+path = "src/abc453_a.rs"
+
+[[bin]]
+name = "abc454_a"
+path = "src/abc454_a.rs"
+
+[[bin]]
+name = "abc455_a"
+path = "src/abc455_a.rs"
+
+[[bin]]
+name = "abc456_a"
+path = "src/abc456_a.rs"
