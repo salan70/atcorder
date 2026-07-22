@@ -1,43 +1,36 @@
 {
-  description = "Development environment for solving AtCoder problems in Rust";
+  description = "AtCoder practice in Rust";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs =
-    { nixpkgs, ... }:
-    let
-      supportedSystems = [
-        "aarch64-darwin"
-        "x86_64-darwin"
-        "aarch64-linux"
-        "x86_64-linux"
-      ];
-      forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
-    in
-    {
-      devShells = forAllSystems (
-        system:
-        let
-          pkgs = nixpkgs.legacyPackages.${system};
-        in
-        {
-          default = pkgs.mkShell {
-            packages = with pkgs; [
-              cargo
-              clippy
-              just
-              rust-analyzer
-              rustc
-              rustfmt
-            ];
+  outputs = { self, nixpkgs, flake-utils, rust-overlay }:
+    flake-utils.lib.eachDefaultSystem (system:
+      let
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays = [ rust-overlay.overlays.default ];
+        };
 
-            RUST_BACKTRACE = "1";
-          };
-        }
-      );
+        # AtCoder ジャッジ（2025-10 言語アップデート）は rustc 1.89.0
+        rustToolchain = pkgs.rust-bin.stable."1.89.0".default.override {
+          extensions = [ "rust-src" "rust-analyzer" ];
+        };
 
-      formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.nixfmt);
-    };
+      in
+      {
+        devShells.default = pkgs.mkShell {
+          packages = [
+            rustToolchain
+            pkgs.just # コマンドランナー（レシピは justfile を参照）
+            pkgs.online-judge-tools # サンプルケースの取得・テスト実行 (oj)
+          ];
+        };
+      });
 }
