@@ -1,59 +1,76 @@
-set shell := ["bash", "-euc"]
+# AtCoder ヘルパー。`just` だけ打つとレシピ一覧を表示。
 
-# 利用可能なコマンドを表示する
-default:
-    @just --list
+alias n := new
+alias t := test
+alias r := run
+alias o := open
+alias d := done
 
-# workspace 全体をビルドする
-build:
-    cargo build --workspace
+_default:
+    @just --list --unsorted
 
-# workspace 全体をチェックする
-check:
-    cargo check --workspace --all-targets
-
-# workspace 全体のテストを実行する
-test:
-    cargo test --workspace
-
-# Rust コードを整形する
-fmt:
-    cargo fmt --all
-
-# Rust コードが整形済みか確認する
-fmt-check:
-    cargo fmt --all -- --check
-
-# Clippy で静的解析する
-clippy:
-    cargo clippy --workspace --all-targets -- -D warnings
-
-# 提出前の一括検証を実行する
-verify: fmt-check check clippy test
-
-# 新しい問題を作成する（例: just new abc456_a）
-new bin_name:
+# 問題ファイルを作成（省略時は a b）  例: just new abc300 / just n abc300 a b c
+new contest +problems="a b":
     #!/usr/bin/env bash
     set -euo pipefail
-    NAME="{{ bin_name }}"
-    SRC="rust/src/${NAME}.rs"
-    if [ -f "$SRC" ]; then echo "Error: $SRC already exists"; exit 1; fi
-    cp templates/main.rs "$SRC"
-    mkdir -p "rust/tests/${NAME}"
-    touch "rust/tests/${NAME}/input.txt" "rust/tests/${NAME}/output.txt"
-    # Cargo.toml に [[bin]] を追加
-    printf '\n[[bin]]\nname = "%s"\npath = "src/%s.rs"\n' "$NAME" "$NAME" >> rust/Cargo.toml
-    echo "Created rust/src/${NAME}.rs"
+    for p in {{ problems }}; do
+      bin="{{ contest }}_${p}"
+      file="src/bin/${bin}/main.rs"
+      if [[ -d "src/bin/done/${bin}" ]]; then
+        echo "skip: ${bin}（回答完了済み。再挑戦するなら just undone {{ contest }} ${p}）"
+      elif [[ -e "$file" ]]; then
+        echo "skip: ${file}（すでに存在します）"
+      else
+        mkdir -p "$(dirname "$file")"
+        cp templates/main.rs "$file"
+        echo "created: ${file}"
+      fi
+    done
 
-# サンプル入力で解答を実行する（例: just run abc456_a）
-run bin_name:
-    cargo run --quiet -p rust --bin "{{ bin_name }}" < "rust/tests/{{ bin_name }}/input.txt"
-
-# サンプル出力と解答を比較する（例: just sample abc456_a）
-sample bin_name:
+# サンプルを取得してテスト実行  例: just test abc300 a / just t abc300 a
+test contest problem url="":
     #!/usr/bin/env bash
     set -euo pipefail
-    actual="$(mktemp)"
-    trap 'rm -f "$actual"' EXIT
-    cargo run --quiet -p rust --bin "{{ bin_name }}" < "rust/tests/{{ bin_name }}/input.txt" > "$actual"
-    diff -u "rust/tests/{{ bin_name }}/output.txt" "$actual"
+    url="{{ url }}"
+    [[ -n "$url" ]] || url="https://atcoder.jp/contests/{{ contest }}/tasks/{{ contest }}_{{ problem }}"
+    bin="{{ contest }}_{{ problem }}"
+    testdir="src/bin/$bin/tests"
+    if [[ ! -d "$testdir" ]]; then
+      echo "downloading samples: $url"
+      oj download "$url" -d "$testdir"
+    fi
+    cargo build --release --bin "$bin"
+    oj test -c "target/release/$bin" -d "$testdir"
+
+# ビルドして手入力で実行
+run contest problem:
+    cargo run --release --bin {{ contest }}_{{ problem }}
+
+# 問題ページをブラウザで開く
+open contest problem:
+    open "https://atcoder.jp/contests/{{ contest }}/tasks/{{ contest }}_{{ problem }}"
+
+# 回答完了した問題を src/bin/done/ に移動  例: just done abc300 a / just d abc300 a
+done contest problem:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    bin="{{ contest }}_{{ problem }}"
+    src="src/bin/$bin"
+    dst="src/bin/done/$bin"
+    [[ -d "$src" ]] || { echo "error: $src がありません"; exit 1; }
+    [[ ! -e "$dst" ]] || { echo "error: $dst がすでに存在します"; exit 1; }
+    mkdir -p src/bin/done
+    mv "$src" "$dst"
+    echo "moved: $src -> $dst"
+
+# done の問題を作業中に戻す（再挑戦用）  例: just undone abc300 a
+undone contest problem:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    bin="{{ contest }}_{{ problem }}"
+    src="src/bin/done/$bin"
+    dst="src/bin/$bin"
+    [[ -d "$src" ]] || { echo "error: $src がありません"; exit 1; }
+    [[ ! -e "$dst" ]] || { echo "error: $dst がすでに存在します"; exit 1; }
+    mv "$src" "$dst"
+    echo "moved: $src -> $dst"
