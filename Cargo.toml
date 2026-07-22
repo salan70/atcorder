@@ -1,3 +1,18 @@
-[workspace]
-resolver = "2"
-members = ["lib", "rust"]
+[package]
+name = "atcoder"
+version = "0.1.0"
+edition = "2021"
+
+# src/bin/<name>/main.rs が自動的にバイナリ <name> として認識される。
+# 1 問題 = 1 フォルダ（例: src/bin/abc300_a/main.rs → cargo run --bin abc300_a）
+# サンプルケースは同フォルダの tests/ に同居（コロケーション、git 管理外）
+#
+# 解答完了した問題は src/bin/done/<name>/ に移動する（just done）。
+# 一段深い階層は Cargo の自動検出の対象外なので、done 配下はビルドされない
+# （作業中の問題だけがビルド対象になる）。再挑戦するときは just undone で戻す。
+
+[dependencies]
+# バージョンは AtCoder ジャッジ（2025-10 言語アップデート）に合わせる
+proconio = "0.5.0"
+itertools = "0.14.0"
+ac-library-rs = "0.2.0"
